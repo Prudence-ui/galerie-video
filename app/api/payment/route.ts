@@ -24,7 +24,7 @@ export async function POST() {
             iso: "XOF"
           },
 
-          callback_url: `${process.env.SITE_URL}/merci`,
+          callback_url:`${process.env.SITE_URL}/merci?status=approved`,
 
           customer: {
             firstname: "Client",
