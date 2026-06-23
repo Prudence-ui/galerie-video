@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  email     String
+  amount    Int
+  status    String   @default("pending")
+  reference String   @unique
+  createdAt DateTime @default(now())
+}
