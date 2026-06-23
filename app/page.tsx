@@ -52,7 +52,7 @@ export default function Home() {
       </h1>
 
       <p style={{ marginTop: "10px" }}>
-        Paiement unique : 1500 FCFA
+        Paiement unique : {process.env.NEXT_PUBLIC_PAYMENT_AMOUNT} FCFA
       </p>
 
       <button
