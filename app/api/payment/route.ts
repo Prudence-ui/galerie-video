@@ -15,7 +15,7 @@ export async function POST() {
         },
 
         body: JSON.stringify({
-          amount: 100,
+          amount: Number(process.env.PAYMENT_AMOUNT),
 
           description:
             "Accès galerie vidéo",
