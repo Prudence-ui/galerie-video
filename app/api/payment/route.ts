@@ -15,7 +15,7 @@ export async function POST() {
         },
 
         body: JSON.stringify({
-          amount: 1500,
+          amount: 100,
 
           description:
             "Accès galerie vidéo",
@@ -24,8 +24,7 @@ export async function POST() {
             iso: "XOF"
           },
 
-          callback_url:
-            "http://localhost:3000/merci",
+          callback_url: `${process.env.SITE_URL}/merci`,
 
           customer: {
             firstname: "Client",
