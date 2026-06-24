@@ -87,16 +87,21 @@ borderRadius:"16px"
 }}
 >
 
-<iframe
+<video
+controls
+controlsList="nodownload"
 width="100%"
-height="500"
-src={`https://drive.google.com/file/d/${video.fileId}/preview`}
 style={{
-border:"none",
 borderRadius:"12px"
 }}
-allow="autoplay"
+>
+
+<source
+src={video.url}
+type="video/mp4"
 />
+
+</video>
 
 <h2
 style={{
