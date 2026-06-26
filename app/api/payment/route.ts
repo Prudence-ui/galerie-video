@@ -30,7 +30,7 @@ export async function POST() {
             firstname: "Client",
             lastname: "Test",
             email:
-              "test@test.com"
+              "tchidiprudence7@gmail.com.com"
           }
         })
       }
