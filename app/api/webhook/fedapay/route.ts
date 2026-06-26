@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
 const resend =
@@ -55,38 +54,10 @@ tx.customer?.email
 "test@test.com";
 
 // anti doublon
-const exist =
-await prisma.payment.findUnique({
-
-where:{
+console.log(
+"Paiement validé :",
 reference
-}
-
-});
-
-if(exist){
-
-return NextResponse.json({
-ok:true
-});
-
-}
-
-await prisma.payment.create({
-
-data:{
-
-reference,
-
-amount,
-
-email,
-
-status:"paid"
-
-}
-
-});
+);
 
 await resend.emails.send({
 
