@@ -2,108 +2,149 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend =
+new Resend(
+process.env.RESEND_API_KEY
+);
 
-// helper sécurité simple
-function isValidPayment(data: any) {
-  return (
-    data &&
-    data.status === "approved" &&
-    data.amount &&
-    data.reference
-  );
+export async function POST(
+req: Request
+) {
+
+try {
+
+const body =
+await req.json();
+
+console.log(
+"WEBHOOK FEDAPAY →",
+JSON.stringify(
+body,
+null,
+2
+)
+);
+
+const tx =
+body?.entity
+||
+body?.data
+||
+body;
+
+const status =
+tx?.status;
+
+const amount =
+tx?.amount;
+
+const reference =
+tx?.reference;
+
+const email =
+tx?.customer?.email
+||
+"test@test.com";
+
+// accepter uniquement paiement approuvé
+if (
+status !==
+"approved"
+) {
+
+return NextResponse.json(
+{
+ignored:true
+}
+);
+
 }
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
+// anti doublon
+const existing =
+await prisma.payment.findUnique({
+where:{
+reference
+}
+});
 
-    const transaction =
-      body?.data || body;
+if(existing){
 
-    // 🔐 1. Vérification anti fake payment
-    if (!isValidPayment(transaction)) {
-      return NextResponse.json(
-        { error: "Invalid payment" },
-        { status: 400 }
-      );
-    }
+return NextResponse.json({
+already:true
+});
 
-    const email =
-      transaction?.customer?.email;
+}
 
-    const amount =
-      transaction?.amount;
+await prisma.payment.create({
 
-    const reference =
-      transaction?.reference;
+data:{
 
-    if (!email || !reference) {
-      return NextResponse.json(
-        { error: "Missing data" },
-        { status: 400 }
-      );
-    }
+email,
 
-    // 🔐 2. éviter doublons (anti replay attack)
-    const existing =
-      await prisma.payment.findUnique({
-        where: { reference }
-      });
+amount,
 
-    if (existing) {
-      return NextResponse.json({
-        success: true,
-        message: "Already processed"
-      });
-    }
+reference,
 
-    // 💾 3. sauvegarde en base
-    await prisma.payment.create({
-      data: {
-        email,
-        amount,
-        reference,
-        status: "paid"
-      }
-    });
+status
 
-    // 📩 4. envoi email automatique
-    await resend.emails.send({
-      from: "Galerie Vidéo <onboarding@resend.dev>",
-      to: email,
-      subject: "🎥 Accès à votre galerie vidéo",
-      html: `
-        <div style="font-family:Arial;padding:20px">
-          <h1>Merci pour votre achat 🎉</h1>
+}
 
-          <p>Votre paiement a été validé avec succès.</p>
+});
 
-          <p>Voici votre accès :</p>
+await resend.emails.send({
 
-          <a href="${process.env.SITE_URL}/acces" 
-             style="display:inline-block;margin-top:10px;padding:10px 20px;background:black;color:white;text-decoration:none;border-radius:8px;">
-            Accéder à la galerie
-          </a>
+from:
+"Galerie <onboarding@resend.dev>",
 
-          <p style="margin-top:20px;font-size:12px;color:gray;">
-            Si vous n’êtes pas à l’origine de cet achat, ignorez cet email.
-          </p>
-        </div>
-      `,
-    });
+to:
+email,
 
-    // ✅ réponse OK
-    return NextResponse.json({
-      success: true
-    });
+subject:
+"🎥 Accès Galerie",
 
-  } catch (error) {
-    console.log("WEBHOOK ERROR:", error);
+html:`
 
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
-  }
+<h1>
+Paiement confirmé
+</h1>
+
+<p>
+Votre accès :
+</p>
+
+<a href="${process.env.GALLERY_URL}">
+Ouvrir la galerie
+</a>
+
+`
+
+});
+
+return NextResponse.json(
+{
+success:true
+}
+);
+
+}
+
+catch(e){
+
+console.log(
+"WEBHOOK ERROR",
+e
+);
+
+return NextResponse.json(
+{
+error:true
+},
+{
+status:200
+}
+);
+
+}
+
 }
