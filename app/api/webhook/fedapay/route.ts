@@ -9,15 +9,14 @@ process.env.RESEND_API_KEY
 
 export async function POST(
 req: Request
-) {
+){
 
-try {
+try{
 
 const body =
 await req.json();
 
 console.log(
-"WEBHOOK FEDAPAY →",
 JSON.stringify(
 body,
 null,
@@ -26,52 +25,49 @@ null,
 );
 
 const tx =
-body?.entity
+body.data
 ||
-body?.data
+body.entity
 ||
 body;
 
-const status =
-tx?.status;
+if(
+tx.status
+!==
+"approved"
+){
 
-const amount =
-tx?.amount;
+return NextResponse.json({
+ignored:true
+});
+
+}
 
 const reference =
-tx?.reference;
+tx.reference;
+
+const amount =
+tx.amount;
 
 const email =
-tx?.customer?.email
+tx.customer?.email
 ||
 "test@test.com";
 
-// accepter uniquement paiement approuvé
-if (
-status !==
-"approved"
-) {
-
-return NextResponse.json(
-{
-ignored:true
-}
-);
-
-}
-
 // anti doublon
-const existing =
+const exist =
 await prisma.payment.findUnique({
+
 where:{
 reference
 }
+
 });
 
-if(existing){
+if(exist){
 
 return NextResponse.json({
-already:true
+ok:true
 });
 
 }
@@ -80,13 +76,13 @@ await prisma.payment.create({
 
 data:{
 
-email,
+reference,
 
 amount,
 
-reference,
+email,
 
-status
+status:"paid"
 
 }
 
@@ -121,27 +117,20 @@ Ouvrir la galerie
 
 });
 
-return NextResponse.json(
-{
+return NextResponse.json({
 success:true
-}
-);
+});
 
 }
 
 catch(e){
 
-console.log(
-"WEBHOOK ERROR",
-e
-);
+console.log(e);
 
+// IMPORTANT :
 return NextResponse.json(
 {
-error:true
-},
-{
-status:200
+ok:true
 }
 );
 
