@@ -10,7 +10,7 @@ export async function POST() {
 
         headers: {
           Authorization:
-            `Bearer sk_live_v5ac2YBa2BXqIb-eTL06d-VX`,
+            `Bearer sk_live_yZnDFFjtoECNm-xtmqg6Rf43`,
           "Content-Type": "application/json"
         },
 
