@@ -26,11 +26,11 @@ export async function POST() {
 
           callback_url:`${process.env.SITE_URL}/merci?status=approved`,
 
-          customer: {
-            firstname: "Client",
-            lastname: "Test",
-            email:
-              "tchidiprudence7@gmail.com.com"
+          customer:{
+                firstname:"Client",
+                lastname:"Test",
+                email:
+                "tchidiprudence7@gmail.com"
           }
         })
       }
