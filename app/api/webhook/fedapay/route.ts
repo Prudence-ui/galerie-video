@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(
-  process.env.RESEND_API_KEY
+const resend =
+new Resend(
+process.env.RESEND_API_KEY
 );
 
 export async function POST(
-  req: Request
-) {
+req: Request
+){
 
-try {
+try{
 
 const body =
 await req.json();
 
 console.log(
-"WEBHOOK :",
+"WEBHOOK:",
 JSON.stringify(
 body,
 null,
@@ -23,17 +24,17 @@ null,
 )
 );
 
-// structure réelle Fedapay
+// IMPORTANT → Fedapay envoie entity
 const tx =
+body?.entity
+||
 body?.data
 ||
 body;
 
-const status =
-tx?.status;
-
 if(
-status !==
+tx?.status
+!==
 "approved"
 ){
 
@@ -43,29 +44,22 @@ ignored:true
 
 }
 
-// récupération email
+// email réel
 const email =
-
-tx?.customer?.email
-||
-
-tx?.metadata?.email
-||
-
-tx?.email;
+tx?.customer?.email;
 
 if(
 !email
 ){
 
 console.log(
-"AUCUN EMAIL"
+"EMAIL INTROUVABLE"
 );
 
 return NextResponse.json(
 {
 error:
-"email manquant"
+"email missing"
 },
 {
 status:400
@@ -75,7 +69,7 @@ status:400
 }
 
 console.log(
-"EMAIL →",
+"EMAIL:",
 email
 );
 
@@ -89,7 +83,7 @@ to:
 [email],
 
 subject:
-"🎥 Accès Galerie",
+"🎥 Votre accès galerie",
 
 html:`
 
@@ -97,32 +91,34 @@ html:`
 style="
 font-family:Arial;
 padding:20px;
-"
->
+">
 
 <h1>
 Merci 🎉
 </h1>
 
 <p>
-Votre paiement est confirmé.
+Votre paiement a été confirmé.
 </p>
+
+<p>
 
 <a
 href="${process.env.GALLERY_URL}"
 style="
-padding:12px 20px;
 background:black;
 color:white;
+padding:12px 20px;
+display:inline-block;
 text-decoration:none;
 border-radius:8px;
-display:inline-block;
-"
->
+">
 
-Ouvrir la galerie
+Accéder à la galerie
 
 </a>
+
+</p>
 
 </div>
 
@@ -131,7 +127,7 @@ Ouvrir la galerie
 });
 
 console.log(
-"EMAIL ENVOYÉ :",
+"MAIL ENVOYÉ:",
 result
 );
 
