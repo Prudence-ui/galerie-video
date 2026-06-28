@@ -3,7 +3,7 @@ import { videos } from "@/data/videos";
 
 export default async function Galerie({
   searchParams
-}:{
+}: {
   searchParams: Promise<{
     token?: string
   }>
@@ -29,7 +29,7 @@ fontSize:"24px"
 }}
 >
 
-Accès refusé 🔒
+Lien invalide 🔒
 
 </div>
 
@@ -46,37 +46,13 @@ accessKey: token
 
 });
 
-if(!payment){
-
-return (
-
-<div
-style={{
-height:"100vh",
-display:"flex",
-justifyContent:"center",
-alignItems:"center",
-fontSize:"24px"
-}}
->
-
-Lien invalide 🔒
-
-</div>
-
-);
-
-}
-
-const expired =
-
+if(
+!payment
+||
 new Date()
 >
-new Date(
 payment.expiresAt
-);
-
-if(expired){
+){
 
 return (
 
@@ -84,37 +60,20 @@ return (
 style={{
 height:"100vh",
 display:"flex",
-flexDirection:"column",
 justifyContent:"center",
 alignItems:"center",
-padding:"20px",
-textAlign:"center"
+fontSize:"24px",
+flexDirection:"column",
+gap:"10px"
 }}
 >
 
 <h1>
-⏳ Accès expiré
+Accès expiré ⛔
 </h1>
 
 <p>
-
-Votre accès à la galerie
-a expiré.
-
-</p>
-
-<p>
-
-Date d'expiration :
-
-{" "}
-
-{new Date(
-payment.expiresAt
-).toLocaleDateString(
-"fr-FR"
-)}
-
+Votre accès à la galerie a expiré.
 </p>
 
 </div>
@@ -134,32 +93,19 @@ padding:"40px"
 }}
 >
 
-<h1
-style={{
-fontSize:"40px",
-marginBottom:"10px"
-}}
->
-
+<h1>
 🎥 Galerie privée
-
 </h1>
 
-<p
-style={{
-color:"#94a3b8",
-marginBottom:"30px"
-}}
->
-
-Accès valide jusqu’au{" "}
-
-{new Date(
+<p>
+Accès valable jusqu’au{" "}
+{
+new Date(
 payment.expiresAt
 ).toLocaleDateString(
 "fr-FR"
-)}
-
+)
+}
 </p>
 
 <div
@@ -185,9 +131,6 @@ borderRadius:"16px"
 controls
 controlsList="nodownload"
 width="100%"
-style={{
-borderRadius:"12px"
-}}
 >
 
 <source
@@ -197,14 +140,8 @@ type="video/mp4"
 
 </video>
 
-<h2
-style={{
-marginTop:"15px"
-}}
->
-
+<h2>
 {video.title}
-
 </h2>
 
 </div>
