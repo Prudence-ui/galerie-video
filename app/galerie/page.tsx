@@ -2,157 +2,143 @@ import { prisma } from "@/lib/prisma";
 import { videos } from "@/data/videos";
 
 export default async function Galerie({
-  searchParams
+  searchParams,
 }: {
   searchParams: Promise<{
-    token?: string
-  }>
+    token?: string;
+  }>;
 }) {
+  const params = await searchParams;
 
-const params =
-await searchParams;
+  const token = params.token;
 
-const token =
-params.token;
+  if (!token) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "24px",
+        }}
+      >
+        Accès refusé 🔒
+      </div>
+    );
+  }
 
-if(!token){
+  const payment = await prisma.payment.findUnique({
+    where: {
+      accessKey: token,
+    },
+  });
 
-return (
+  // lien inexistant
+  if (!payment) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "24px",
+        }}
+      >
+        Lien invalide 🔒
+      </div>
+    );
+  }
 
-<div
-style={{
-height:"100vh",
-display:"flex",
-justifyContent:"center",
-alignItems:"center",
-fontSize:"24px"
-}}
->
+  // lien expiré
+  if (new Date() > payment.expiresAt) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          gap: "20px",
+          fontSize: "24px",
+        }}
+      >
+        <h1>⏳ Accès expiré</h1>
 
-Lien invalide 🔒
+        <p>
+          Votre accès galerie a expiré le{" "}
+          {payment.expiresAt.toLocaleDateString("fr-FR")}
+        </p>
+      </div>
+    );
+  }
 
-</div>
+  return (
+    <main
+      style={{
+        background: "#0f172a",
+        color: "white",
+        minHeight: "100vh",
+        padding: "40px",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "40px",
+          marginBottom: "10px",
+        }}
+      >
+        🎥 Galerie privée
+      </h1>
 
-);
+      <p
+        style={{
+          color: "#94a3b8",
+          marginBottom: "30px",
+        }}
+      >
+        Accès valide jusqu'au{" "}
+        {payment.expiresAt.toLocaleDateString("fr-FR")}
+      </p>
 
-}
+      <div
+        style={{
+          display: "grid",
+          gap: "30px",
+        }}
+      >
+        {videos.map((video) => (
+          <div
+            key={video.id}
+            style={{
+              background: "#1e293b",
+              padding: "20px",
+              borderRadius: "16px",
+            }}
+          >
+            <video
+              controls
+              controlsList="nodownload"
+              width="100%"
+              style={{
+                borderRadius: "12px",
+              }}
+            >
+              <source src={video.url} type="video/mp4" />
+            </video>
 
-const payment =
-await prisma.payment.findUnique({
-
-where:{
-accessKey: token
-}
-
-});
-
-if(
-!payment
-||
-new Date()
->
-payment.expiresAt
-){
-
-return (
-
-<div
-style={{
-height:"100vh",
-display:"flex",
-justifyContent:"center",
-alignItems:"center",
-fontSize:"24px",
-flexDirection:"column",
-gap:"10px"
-}}
->
-
-<h1>
-Accès expiré ⛔
-</h1>
-
-<p>
-Votre accès à la galerie a expiré.
-</p>
-
-</div>
-
-);
-
-}
-
-return (
-
-<main
-style={{
-background:"#0f172a",
-color:"white",
-minHeight:"100vh",
-padding:"40px"
-}}
->
-
-<h1>
-🎥 Galerie privée
-</h1>
-
-<p>
-Accès valable jusqu’au{" "}
-{
-new Date(
-payment.expiresAt
-).toLocaleDateString(
-"fr-FR"
-)
-}
-</p>
-
-<div
-style={{
-display:"grid",
-gap:"30px"
-}}
->
-
-{videos.map(
-(video)=>(
-
-<div
-key={video.id}
-style={{
-background:"#1e293b",
-padding:"20px",
-borderRadius:"16px"
-}}
->
-
-<video
-controls
-controlsList="nodownload"
-width="100%"
->
-
-<source
-src={video.url}
-type="video/mp4"
-/>
-
-</video>
-
-<h2>
-{video.title}
-</h2>
-
-</div>
-
-)
-)}
-
-</div>
-
-</main>
-
-);
-
+            <h2
+              style={{
+                marginTop: "15px",
+              }}
+            >
+              {video.title}
+            </h2>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
 }
