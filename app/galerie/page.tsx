@@ -1,14 +1,13 @@
-import { videos } from "@/data/videos";
 import { prisma } from "@/lib/prisma";
+import { videos } from "@/data/videos";
 
 export default async function Galerie({
-searchParams
+  searchParams
 }:{
-searchParams:
-Promise<{
-token?:string
-}>
-}){
+  searchParams: Promise<{
+    token?: string
+  }>
+}) {
 
 const params =
 await searchParams;
@@ -16,23 +15,17 @@ await searchParams;
 const token =
 params.token;
 
-if(
-!token
-){
+if(!token){
 
-return(
+return (
 
 <div
 style={{
-
 height:"100vh",
-
 display:"flex",
-
 justifyContent:"center",
-
-alignItems:"center"
-
+alignItems:"center",
+fontSize:"24px"
 }}
 >
 
@@ -44,46 +37,30 @@ Accès refusé 🔒
 
 }
 
-const access =
-await prisma.payment.findFirst({
+const payment =
+await prisma.payment.findUnique({
 
 where:{
-
-accessKey:
-token,
-
-expiresAt:{
-
-gt:
-new Date()
-
-}
-
+accessKey: token
 }
 
 });
 
-if(
-!access
-){
+if(!payment){
 
-return(
+return (
 
 <div
 style={{
-
 height:"100vh",
-
 display:"flex",
-
 justifyContent:"center",
-
-alignItems:"center"
-
+alignItems:"center",
+fontSize:"24px"
 }}
 >
 
-Lien expiré 🔒
+Lien invalide 🔒
 
 </div>
 
@@ -91,67 +68,116 @@ Lien expiré 🔒
 
 }
 
-return(
+const expired =
 
-<main
+new Date()
+>
+new Date(
+payment.expiresAt
+);
+
+if(expired){
+
+return (
+
+<div
 style={{
-
-background:"#0f172a",
-
-color:"white",
-
-minHeight:"100vh",
-
-padding:"40px"
-
+height:"100vh",
+display:"flex",
+flexDirection:"column",
+justifyContent:"center",
+alignItems:"center",
+padding:"20px",
+textAlign:"center"
 }}
 >
 
 <h1>
+⏳ Accès expiré
+</h1>
+
+<p>
+
+Votre accès à la galerie
+a expiré.
+
+</p>
+
+<p>
+
+Date d'expiration :
+
+{" "}
+
+{new Date(
+payment.expiresAt
+).toLocaleDateString(
+"fr-FR"
+)}
+
+</p>
+
+</div>
+
+);
+
+}
+
+return (
+
+<main
+style={{
+background:"#0f172a",
+color:"white",
+minHeight:"100vh",
+padding:"40px"
+}}
+>
+
+<h1
+style={{
+fontSize:"40px",
+marginBottom:"10px"
+}}
+>
 
 🎥 Galerie privée
 
 </h1>
 
-<p>
+<p
+style={{
+color:"#94a3b8",
+marginBottom:"30px"
+}}
+>
 
-Accès valide jusqu'au{" "}
-{
-access.expiresAt
-.toLocaleDateString(
+Accès valide jusqu’au{" "}
+
+{new Date(
+payment.expiresAt
+).toLocaleDateString(
 "fr-FR"
-)
-}
+)}
 
 </p>
 
 <div
 style={{
-
 display:"grid",
-
 gap:"30px"
-
 }}
 >
 
-{
-
-videos.map(
+{videos.map(
 (video)=>(
 
 <div
-key={
-video.id
-}
+key={video.id}
 style={{
-
 background:"#1e293b",
-
 padding:"20px",
-
 borderRadius:"16px"
-
 }}
 >
 
@@ -159,32 +185,32 @@ borderRadius:"16px"
 controls
 controlsList="nodownload"
 width="100%"
+style={{
+borderRadius:"12px"
+}}
 >
 
 <source
-src={
-video.url
-}
+src={video.url}
 type="video/mp4"
 />
 
 </video>
 
-<h2>
+<h2
+style={{
+marginTop:"15px"
+}}
+>
 
-{
-video.title
-}
+{video.title}
 
 </h2>
 
 </div>
 
 )
-
-)
-
-}
+)}
 
 </div>
 
