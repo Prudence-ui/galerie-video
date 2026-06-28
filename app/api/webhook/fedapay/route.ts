@@ -93,12 +93,12 @@ crypto
 .toString("hex");
 
 const expiresAt =
-new Date();
-
-expiresAt.setDate(
-expiresAt.getDate()
+new Date(
+Date.now()
 +
-30
+60
+*
+1000
 );
 
 await prisma.payment.create({
