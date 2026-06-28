@@ -3,15 +3,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Payment {
-  id        Int      @id @default(autoincrement())
-  email     String
-  amount    Int
-  status    String   @default("pending")
-  reference String   @unique
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+
+  email      String
+  reference  String   @unique
+  amount     Int
+  status     String
+
+  accessKey  String   @unique
+
+  expiresAt  DateTime
+
+  createdAt  DateTime @default(now())
 }

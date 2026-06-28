@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import crypto from "crypto";
+import { prisma } from "@/lib/prisma";
 
 const resend =
 new Resend(
-process.env.RESEND_API_KEY
+process.env.RESEND_API_KEY!
 );
 
 export async function POST(
@@ -24,7 +26,6 @@ null,
 )
 );
 
-// IMPORTANT → Fedapay envoie entity
 const tx =
 body?.entity
 ||
@@ -44,7 +45,6 @@ ignored:true
 
 }
 
-// email réel
 const email =
 tx?.customer?.email;
 
@@ -52,14 +52,10 @@ if(
 !email
 ){
 
-console.log(
-"EMAIL INTROUVABLE"
-);
-
 return NextResponse.json(
 {
 error:
-"email missing"
+"email manquant"
 },
 {
 status:400
@@ -68,57 +64,111 @@ status:400
 
 }
 
-console.log(
-"EMAIL:",
-email
+const reference =
+String(
+tx.reference
 );
+
+// anti doublon
+const existing =
+await prisma.payment.findUnique({
+
+where:{
+reference
+}
+
+});
+
+if(existing){
+
+return NextResponse.json({
+already:true
+});
+
+}
+
+const accessKey =
+crypto
+.randomBytes(32)
+.toString("hex");
+
+const expiresAt =
+new Date();
+
+expiresAt.setDate(
+expiresAt.getDate()
++
+30
+);
+
+await prisma.payment.create({
+
+data:{
+
+email:
+String(email),
+
+reference,
+
+amount:
+Number(
+tx.amount
+),
+
+status:
+"paid",
+
+accessKey,
+
+expiresAt
+
+}
+
+});
+
+const galleryUrl =
+`${process.env.SITE_URL}/galerie?token=${accessKey}`;
 
 const result =
 await resend.emails.send({
 
 from:
-"Galerie Vidéo <onboarding@resend.dev>",
+"Galerie <onboarding@resend.dev>",
 
 to:
 [email],
 
 subject:
-"🎥 Votre accès galerie",
+"🎥 Accès à votre galerie",
 
 html:`
 
-<div
-style="
-font-family:Arial;
-padding:20px;
-">
+<div style="font-family:sans-serif">
 
 <h1>
-Merci 🎉
+Merci pour votre achat 🎉
 </h1>
 
 <p>
-Votre paiement a été confirmé.
+Votre accès est actif jusqu'au
+<b>
+${expiresAt.toLocaleDateString("fr-FR")}
+</b>
 </p>
-
-<p>
 
 <a
-href="${process.env.GALLERY_URL}"
+href="${galleryUrl}"
 style="
+display:inline-block;
+padding:12px 18px;
 background:black;
 color:white;
-padding:12px 20px;
-display:inline-block;
 text-decoration:none;
 border-radius:8px;
-">
-
-Accéder à la galerie
-
+"
+>
+Ouvrir la galerie
 </a>
-
-</p>
 
 </div>
 
@@ -127,7 +177,7 @@ Accéder à la galerie
 });
 
 console.log(
-"MAIL ENVOYÉ:",
+"MAIL:",
 result
 );
 

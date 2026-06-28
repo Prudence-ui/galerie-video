@@ -32,12 +32,12 @@ ok
 <div>
 
 <h1>
-✅ Paiement reçu
+⛔ Vérifer votre boite Email ou Spam 
 </h1>
 
 <p>
-Vérification en cours...
 Vous recevrez un email si le paiement est validé.
+Contenant le lien vers la galerie. Merci
 </p>
 
 </div>
@@ -47,11 +47,12 @@ Vous recevrez un email si le paiement est validé.
 <div>
 
 <h1>
-⛔ Paiement non confirmé
+⛔ Vérifer votre boite Email ou Spam 
 </h1>
 
 <p>
-Aucun accès n'a été débloqué.
+Vous recevrez un email si le paiement est validé.
+Contenant le lien vers la galerie. Merci
 </p>
 
 </div>

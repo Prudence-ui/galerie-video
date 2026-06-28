@@ -1,30 +1,38 @@
 import { videos } from "@/data/videos";
+import { prisma } from "@/lib/prisma";
 
 export default async function Galerie({
-  searchParams
-}: {
-  searchParams:
-  Promise<{
-    key?: string
-  }>
-}) {
+searchParams
+}:{
+searchParams:
+Promise<{
+token?:string
+}>
+}){
 
 const params =
 await searchParams;
 
-if (
-params.key !==
-process.env.NEXT_PUBLIC_ACCESS_KEY
-) {
-return (
+const token =
+params.token;
+
+if(
+!token
+){
+
+return(
 
 <div
 style={{
+
 height:"100vh",
+
 display:"flex",
+
 justifyContent:"center",
-alignItems:"center",
-fontSize:"24px"
+
+alignItems:"center"
+
 }}
 >
 
@@ -33,57 +41,117 @@ Accès refusé 🔒
 </div>
 
 );
+
 }
 
-return (
+const access =
+await prisma.payment.findFirst({
+
+where:{
+
+accessKey:
+token,
+
+expiresAt:{
+
+gt:
+new Date()
+
+}
+
+}
+
+});
+
+if(
+!access
+){
+
+return(
+
+<div
+style={{
+
+height:"100vh",
+
+display:"flex",
+
+justifyContent:"center",
+
+alignItems:"center"
+
+}}
+>
+
+Lien expiré 🔒
+
+</div>
+
+);
+
+}
+
+return(
 
 <main
 style={{
+
 background:"#0f172a",
+
 color:"white",
+
 minHeight:"100vh",
+
 padding:"40px"
+
 }}
 >
 
-<h1
-style={{
-fontSize:"40px",
-marginBottom:"10px"
-}}
->
+<h1>
 
 🎥 Galerie privée
 
 </h1>
 
-<p
-style={{
-color:"#94a3b8",
-marginBottom:"30px"
-}}
->
+<p>
 
-+200 vidéos disponibles
+Accès valide jusqu'au{" "}
+{
+access.expiresAt
+.toLocaleDateString(
+"fr-FR"
+)
+}
 
 </p>
 
 <div
 style={{
+
 display:"grid",
+
 gap:"30px"
+
 }}
 >
 
-{videos.map(
+{
+
+videos.map(
 (video)=>(
 
 <div
-key={video.id}
+key={
+video.id
+}
 style={{
+
 background:"#1e293b",
+
 padding:"20px",
+
 borderRadius:"16px"
+
 }}
 >
 
@@ -91,32 +159,32 @@ borderRadius:"16px"
 controls
 controlsList="nodownload"
 width="100%"
-style={{
-borderRadius:"12px"
-}}
 >
 
 <source
-src={video.url}
+src={
+video.url
+}
 type="video/mp4"
 />
 
 </video>
 
-<h2
-style={{
-marginTop:"15px"
-}}
->
+<h2>
 
-{video.title}
+{
+video.title
+}
 
 </h2>
 
 </div>
 
 )
-)}
+
+)
+
+}
 
 </div>
 
