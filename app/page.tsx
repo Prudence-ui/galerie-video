@@ -130,7 +130,7 @@ marginBottom:"20px"
 }}
 >
 
-GALERIE VIDÉO PRIVÉE
+GALERIE VIDÉO 
 
 </div>
 
